@@ -3,48 +3,44 @@
 input_format:
         .string "%ld %ld"
 output_format:
-	.string "%ld / %ld = %ld\n"
-
-.section .data
-
-a:
-	.long 0, 0
-b:
-	.long 0, 0
+	.string "%ld + %ld = %ld\n"
 
 .section .text
 
 # int main(void) {...
 .global main
 main:
+	# enter
         push %rbp
         mov %rsp, %rbp
+
+	# long a, b
+	sub $16, %rsp # {
 
 	#	rdi     rsi rdx
         # scanf("%ld %ld", &a, &b);
         mov $input_format, %rdi
-	mov $a, %rsi
-	mov $b, %rdx
+	lea 8(%rsp), %rsi
+	lea (%rsp), %rdx
 	xor %rax, %rax
         call scanf
 
-	# (a / b)
-	mov $0, %rdx
-	mov a, %rax
-	cqo
-        idivq b
-	mov a, %rsi
-	mov %rax, %rcx
-	mov b, %rdx
+	# a + b
+	mov 8(%rsp), %rsi
+	mov %rsi, %rcx
+	mov (%rsp), %rdx
+	add %rdx, %rcx
 
-	# 	         rdi      rsi  rdx  rcx
-	# printf("%ld / %ld = %ld\n", a, b, c);
+	# 	          rdi      rsi  rdx  rcx
+	# printf("%ld + %ld = %ld\n", a, b, c);
         mov $output_format, %rdi
         xor %rax, %rax
         call printf
 
-        leave
+	leave
+	# mov %rbp, %rsp
+	# pop %rbp
 
 	#return 0
-        xor %rax, %rax
+        xor %eax, %eax
 	ret
